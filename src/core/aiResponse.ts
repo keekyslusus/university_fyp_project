@@ -1,4 +1,29 @@
 import type { AiAnalysis } from "./types";
+import type { Language } from "../i18n/dictionaries";
+
+const fallbackText = {
+  ru: {
+    invalidJson: "Gemini вернул неполный или невалидный JSON-ответ. Повторите анализ.",
+    emptyShort: "ИИ-анализ завершён, но ответ оказался пустым.",
+    emptyDetails: "Gemini не вернул подробный вывод.",
+    riskKeywords: ["риск", "уязвим", "отсутств", "слаб"],
+    actionKeywords: ["рекоменду", "добав", "использ", "перейти", "внедр"]
+  },
+  en: {
+    invalidJson: "Gemini returned an incomplete or invalid JSON response. Run the analysis again.",
+    emptyShort: "AI analysis finished, but the response was empty.",
+    emptyDetails: "Gemini did not return detailed output.",
+    riskKeywords: ["risk", "vulnerab", "missing", "weak", "absent"],
+    actionKeywords: ["recommend", "add", "use", "switch", "enable", "disable"]
+  },
+  kk: {
+    invalidJson: "Gemini толық емес немесе жарамсыз JSON жауабын қайтарды. Талдауды қайта іске қосыңыз.",
+    emptyShort: "ИИ талдауы аяқталды, бірақ жауап бос болды.",
+    emptyDetails: "Gemini толық қорытынды қайтармады.",
+    riskKeywords: ["тәуекел", "осал", "жоқ", "әлсіз", "көрсетілмеген"],
+    actionKeywords: ["ұсыны", "қос", "қолдан", "ауыстыр", "тексер"]
+  }
+} as const;
 
 function cleanJson(raw: string) {
   return raw
@@ -9,7 +34,7 @@ function cleanJson(raw: string) {
     .trim();
 }
 
-export function normalizeAiAnalysis(value: unknown): Omit<AiAnalysis, "cached"> {
+export function normalizeAiAnalysis(value: unknown, language: Language): Omit<AiAnalysis, "cached"> {
   if (!value || typeof value !== "object") {
     throw new Error("Gemini returned an unexpected response format.");
   }
@@ -25,37 +50,37 @@ export function normalizeAiAnalysis(value: unknown): Omit<AiAnalysis, "cached"> 
     shortText: record.shortText.trim().slice(0, 260),
     details,
     summary: stringField(record.summary, details),
-    risks: listField(record.risks, details, ["риск", "уязвим", "отсутств", "слаб"]),
-    actions: listField(record.actions, details, ["рекоменду", "добав", "использ", "перейти", "внедр"]),
+    risks: listField(record.risks, details, fallbackText[language].riskKeywords),
+    actions: listField(record.actions, details, fallbackText[language].actionKeywords),
     conclusion: stringField(record.conclusion, lastSentence(details))
   };
 }
 
-function fallbackFromText(text: string): Omit<AiAnalysis, "cached"> {
+function fallbackFromText(text: string, language: Language): Omit<AiAnalysis, "cached"> {
   const normalized = text.replace(/\s+/g, " ").trim();
   if (!normalized || normalized.startsWith("{")) {
-    throw new Error("Gemini вернул неполный или невалидный JSON-ответ. Повторите анализ.");
+    throw new Error(fallbackText[language].invalidJson);
   }
 
   return {
-    shortText: normalized.slice(0, 240) || "ИИ-анализ завершён, но ответ оказался пустым.",
-    details: normalized.slice(0, 1400) || "Gemini не вернул подробный вывод.",
+    shortText: normalized.slice(0, 240) || fallbackText[language].emptyShort,
+    details: normalized.slice(0, 1400) || fallbackText[language].emptyDetails,
     summary: firstSentence(normalized),
-    risks: extractSentences(normalized, ["риск", "уязвим", "отсутств", "слаб"]).slice(0, 4),
-    actions: extractSentences(normalized, ["рекоменду", "добав", "использ", "перейти", "внедр"]).slice(0, 4),
+    risks: extractSentences(normalized, fallbackText[language].riskKeywords).slice(0, 4),
+    actions: extractSentences(normalized, fallbackText[language].actionKeywords).slice(0, 4),
     conclusion: lastSentence(normalized)
   };
 }
 
-export function parseAiResponse(responseText: string) {
+export function parseAiResponse(responseText: string, language: Language) {
   try {
     return {
-      analysis: normalizeAiAnalysis(JSON.parse(cleanJson(responseText))),
+      analysis: normalizeAiAnalysis(JSON.parse(cleanJson(responseText)), language),
       parseError: null
     };
   } catch (caught) {
     return {
-      analysis: fallbackFromText(responseText),
+      analysis: fallbackFromText(responseText, language),
       parseError: caught
     };
   }
@@ -67,7 +92,7 @@ function stringField(value: unknown, fallback: string) {
     : fallback.slice(0, 500);
 }
 
-function listField(value: unknown, fallbackText: string, keywords: string[]) {
+function listField(value: unknown, fallbackText: string, keywords: readonly string[]) {
   if (Array.isArray(value)) {
     const items = value
       .filter((item): item is string => typeof item === "string")
@@ -100,11 +125,13 @@ function lastSentence(text: string) {
   return sentences.at(-1) ?? text.slice(0, 240);
 }
 
-function extractSentences(text: string, keywords: string[]) {
+function extractSentences(text: string, keywords: readonly string[]) {
   const normalizedKeywords = keywords.map((keyword) => keyword.toLowerCase());
   return splitSentences(text)
     .filter((sentence) => normalizedKeywords.some((keyword) => sentence.toLowerCase().includes(keyword)))
     .map((sentence) => sentence.replace(/^(во-первых|во-вторых|в-третьих|наконец),?\s*/i, ""))
+    .map((sentence) => sentence.replace(/^(first|second|third|finally),?\s*/i, ""))
     .map((sentence) => sentence.replace(/^рекомендуется\s+/i, ""))
+    .map((sentence) => sentence.replace(/^it is recommended to\s+/i, ""))
     .map((sentence) => sentence.trim());
 }

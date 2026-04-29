@@ -22,6 +22,9 @@
   --md-sys-color-surface-container-high: #ece6f0;
   --md-sys-color-outline: #79747e;
   --md-sys-color-outline-variant: #cac4d0;
+  --md-sys-color-error: #ba1a1a;
+  --md-sys-color-error-container: #ffdad6;
+  --md-sys-color-on-error-container: #410002;
   --md-custom-error-container: #ffdad6;
   --md-custom-on-error-container: #410002;
   --md-custom-warning-container: #ffdf99;

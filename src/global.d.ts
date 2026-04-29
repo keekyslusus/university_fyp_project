@@ -5,6 +5,7 @@ interface Window {
     handleDelegatedRipple: (event: PointerEvent) => void;
   };
   scandium?: {
+    setLanguage: (language: string) => void;
     onLanguageChanged: (callback: (language: string) => void) => () => void;
   };
 }

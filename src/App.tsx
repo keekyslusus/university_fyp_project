@@ -1,4 +1,4 @@
-import { createSignal, onCleanup, onMount, Show } from "solid-js";
+import { createEffect, createSignal, onCleanup, onMount, Show } from "solid-js";
 import { render } from "solid-js/web";
 import "material-symbols/rounded.css";
 import { analyzeWithGemini } from "./core/aiAnalysis";
@@ -10,7 +10,10 @@ import { Header } from "./components/Header";
 import { LoadingPanel } from "./components/LoadingPanel";
 import { MessagePanel } from "./components/MessagePanel";
 import { ResultsPanel } from "./components/ResultsPanel";
+import { ToastHost } from "./components/ToastHost";
 import { I18nProvider, useI18n } from "./i18n/I18nProvider";
+import type { Language } from "./i18n/dictionaries";
+import { showToast } from "./stores/toast";
 import "./components/ripple.js";
 import "./styles.css";
 import { downloadText } from "./utils/download";
@@ -19,10 +22,11 @@ interface AiRequest {
   fileName: string;
   text: string;
   localResult: AnalysisResult;
+  language: Language;
 }
 
 function App() {
-  const { setLanguage, t } = useI18n();
+  const { language, setLanguage, t } = useI18n();
   const [result, setResult] = createSignal<AnalysisResult | null>(null);
   const [error, setError] = createSignal("");
   const [isDragging, setIsDragging] = createSignal(false);
@@ -35,6 +39,10 @@ function App() {
   const [isAiDialogOpen, setIsAiDialogOpen] = createSignal(false);
   const [lastAiRequest, setLastAiRequest] = createSignal<AiRequest | null>(null);
   let fileInputRef: HTMLInputElement | undefined;
+
+  createEffect(() => {
+    window.scandium?.setLanguage(language());
+  });
 
   onMount(() => {
     const handler = (event: PointerEvent) => window.VibeClownRipple?.handleDelegatedRipple(event);
@@ -54,6 +62,13 @@ function App() {
 
   async function analyzeFile(file: File) {
     resetAnalysisState();
+
+    if (!isSupportedConfigFile(file)) {
+      showToast(t("unsupportedFileError"), "error");
+      clearFileInput();
+      return;
+    }
+
     setIsAnalyzing(true);
 
     try {
@@ -61,17 +76,23 @@ function App() {
         file.text(),
         new Promise((resolve) => window.setTimeout(resolve, 420))
       ]);
-      const localResult = analyzeConfig(file.name, text);
+      const localResult = analyzeConfig(file.name, text, language());
+      const request = { fileName: file.name, text, localResult, language: language() };
 
-      setLastAiRequest({ fileName: file.name, text, localResult });
+      setLastAiRequest(request);
       setResult(localResult);
-      void runAiAnalysis({ fileName: file.name, text, localResult });
+      void runAiAnalysis(request);
     } catch {
       setError(t("readFileError"));
     } finally {
       setIsAnalyzing(false);
       clearFileInput();
     }
+  }
+
+  function isSupportedConfigFile(file: File) {
+    const name = file.name.toLowerCase();
+    return name.endsWith(".ovpn") || name.endsWith(".conf");
   }
 
   function resetAnalysisState() {
@@ -93,7 +114,7 @@ function App() {
     setAiError("");
 
     try {
-      setAiAnalysis(await analyzeWithGemini(request.fileName, request.text, request.localResult));
+      setAiAnalysis(await analyzeWithGemini(request.fileName, request.text, request.localResult, request.language));
     } catch (caught) {
       setAiError(caught instanceof Error ? caught.message : t("aiGenericError"));
     } finally {
@@ -153,19 +174,20 @@ function App() {
   function exportReport() {
     const current = result();
     if (current) {
-      downloadText(`vpn-analysis-${current.fileName}.txt`, formatReport(current));
+      downloadText(`vpn-analysis-${current.fileName}.txt`, formatReport(current, language()));
     }
   }
 
   return (
     <main class="app">
+      <ToastHost variant="popup-overlay" />
       <Header />
 
       <input
         ref={fileInputRef}
         class="fileInput"
         type="file"
-        accept=".ovpn,.conf,.txt"
+        accept=".ovpn,.conf"
         onChange={handleFileChange}
       />
 

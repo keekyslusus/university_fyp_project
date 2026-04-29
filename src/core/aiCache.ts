@@ -1,4 +1,5 @@
 import { AI_CACHE_VERSION } from "./aiConfig";
+import type { Language } from "../i18n/dictionaries";
 import type { AiAnalysis } from "./types";
 
 const CACHE_PREFIX = `scandium.aiAnalysis.${AI_CACHE_VERSION}.`;
@@ -12,11 +13,11 @@ async function sha256(content: string) {
     .join("");
 }
 
-export async function createAiCacheKey(content: string) {
+export async function createAiCacheKey(content: string, language: Language) {
   const hash = await sha256(content);
   return {
     hash,
-    key: `${CACHE_PREFIX}${hash}`
+    key: `${CACHE_PREFIX}${language}.${hash}`
   };
 }
 

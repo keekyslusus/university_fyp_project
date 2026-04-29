@@ -1,24 +1,83 @@
-import { app, BrowserWindow, Menu } from "electron";
+import { app, BrowserWindow, Menu, ipcMain } from "electron";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-let mainWindow: BrowserWindow | null = null;
+type Language = "ru" | "en" | "kk";
 
-function sendLanguage(language: "ru" | "en" | "kk") {
-  mainWindow?.webContents.send("language-changed", language);
+let mainWindow: BrowserWindow | null = null;
+let currentLanguage: Language = "en";
+
+const menuText: Record<Language, {
+  file: string;
+  edit: string;
+  view: string;
+  window: string;
+  language: string;
+  languageNames: Record<Language, string>;
+}> = {
+  ru: {
+    file: "Файл",
+    edit: "Правка",
+    view: "Вид",
+    window: "Окно",
+    language: "Язык",
+    languageNames: {
+      ru: "Русский",
+      en: "English",
+      kk: "Қазақша"
+    }
+  },
+  en: {
+    file: "File",
+    edit: "Edit",
+    view: "View",
+    window: "Window",
+    language: "Language",
+    languageNames: {
+      ru: "Русский",
+      en: "English",
+      kk: "Қазақша"
+    }
+  },
+  kk: {
+    file: "Файл",
+    edit: "Өңдеу",
+    view: "Көрініс",
+    window: "Терезе",
+    language: "Тіл",
+    languageNames: {
+      ru: "Русский",
+      en: "English",
+      kk: "Қазақша"
+    }
+  }
+};
+
+function isLanguage(value: unknown): value is Language {
+  return value === "ru" || value === "en" || value === "kk";
+}
+
+function setApplicationLanguage(language: Language, notifyRenderer = false) {
+  currentLanguage = language;
+  createApplicationMenu();
+
+  if (notifyRenderer) {
+    mainWindow?.webContents.send("language-changed", language);
+  }
 }
 
 function createApplicationMenu() {
+  const text = menuText[currentLanguage];
   const template: Electron.MenuItemConstructorOptions[] = [
     {
-      label: "File",
+      label: text.file,
       submenu: [{ role: "quit" }]
     },
     {
-      label: "Edit",
+      label: text.edit,
       submenu: [
         { role: "undo" },
         { role: "redo" },
@@ -30,14 +89,14 @@ function createApplicationMenu() {
       ]
     },
     {
-      label: "View",
+      label: text.view,
       submenu: [
         {
-          label: "Language",
+          label: text.language,
           submenu: [
-            { label: "Русский", type: "radio", click: () => sendLanguage("ru") },
-            { label: "English", type: "radio", checked: true, click: () => sendLanguage("en") },
-            { label: "Қазақша", type: "radio", click: () => sendLanguage("kk") }
+            { label: text.languageNames.ru, type: "radio", checked: currentLanguage === "ru", click: () => setApplicationLanguage("ru", true) },
+            { label: text.languageNames.en, type: "radio", checked: currentLanguage === "en", click: () => setApplicationLanguage("en", true) },
+            { label: text.languageNames.kk, type: "radio", checked: currentLanguage === "kk", click: () => setApplicationLanguage("kk", true) }
           ]
         },
         { type: "separator" },
@@ -53,7 +112,7 @@ function createApplicationMenu() {
       ]
     },
     {
-      label: "Window",
+      label: text.window,
       submenu: [{ role: "minimize" }, { role: "close" }]
     }
   ];
@@ -88,6 +147,12 @@ function createWindow() {
 app.whenReady().then(() => {
   createApplicationMenu();
   createWindow();
+
+  ipcMain.on("set-language", (_event, language: unknown) => {
+    if (isLanguage(language)) {
+      setApplicationLanguage(language);
+    }
+  });
 
   app.on("activate", () => {
     if (BrowserWindow.getAllWindows().length === 0) {

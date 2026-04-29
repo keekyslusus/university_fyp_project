@@ -1,44 +1,56 @@
-import type { AnalysisResult } from "./types";
+import type { Language } from "../i18n/dictionaries";
 import { MAX_CONFIG_CHARS } from "./aiConfig";
+import type { AnalysisResult } from "./types";
 
-function riskLevelRu(level: AnalysisResult["riskLevel"]) {
-  switch (level) {
-    case "low":
-      return "низкий";
-    case "medium":
-      return "средний";
-    case "high":
-      return "высокий";
-  }
+const promptLanguageName: Record<Language, string> = {
+  ru: "Russian",
+  en: "English",
+  kk: "Kazakh"
+};
+
+function riskLevelLabel(level: AnalysisResult["riskLevel"], language: Language) {
+  const labels = {
+    ru: { low: "низкий", medium: "средний", high: "высокий" },
+    en: { low: "low", medium: "medium", high: "high" },
+    kk: { low: "төмен", medium: "орташа", high: "жоғары" }
+  } as const;
+
+  return labels[language][level];
 }
 
-export function buildAiPrompt(fileName: string, configContent: string, localAnalysis: AnalysisResult) {
+export function buildAiPrompt(
+  fileName: string,
+  configContent: string,
+  localAnalysis: AnalysisResult,
+  language: Language
+) {
   const findings = localAnalysis.findings
     .map((finding) => `- ${finding.severity}: ${finding.title}. ${finding.description}`)
     .join("\n");
+  const outputLanguage = promptLanguageName[language];
 
-  return `Ты эксперт по безопасности VPN. Проанализируй конфигурацию и результаты локальных правил Scandium.
+  return `You are a VPN security expert. Analyze the VPN configuration and Scandium's local rule findings.
 
-Верни только валидный JSON без markdown:
+Return only valid JSON without markdown. All user-facing text values must be written in ${outputLanguage}.
 {
-  "shortText": "краткий вывод на русском до 220 символов",
-  "summary": "1-2 предложения общего вывода",
-  "risks": ["короткий риск 1", "короткий риск 2", "короткий риск 3"],
-  "actions": ["конкретное действие 1", "конкретное действие 2", "конкретное действие 3"],
-  "conclusion": "итоговый вывод одним предложением",
-  "details": "тот же смысл связным текстом на русском 700-1000 символов"
+  "shortText": "brief conclusion up to 220 characters",
+  "summary": "1-2 sentences with the general conclusion",
+  "risks": ["short risk 1", "short risk 2", "short risk 3"],
+  "actions": ["concrete action 1", "concrete action 2", "concrete action 3"],
+  "conclusion": "final conclusion in one sentence",
+  "details": "same meaning as connected text, 700-1000 characters"
 }
 
-Не пиши эссе. Не придумывай факты, если параметра нет в конфиге. В risks и actions пиши без нумерации, по 3-5 пунктов максимум.
+Do not write an essay. Do not invent facts if a parameter is absent. Use no numbering inside risks and actions. Use 3-5 items at most.
 
-Файл: ${fileName}
-Тип: ${localAnalysis.type}
-Оценка Scandium: ${localAnalysis.score}/100
-Уровень риска: ${riskLevelRu(localAnalysis.riskLevel)}
+File: ${fileName}
+Type: ${localAnalysis.type}
+Scandium score: ${localAnalysis.score}/100
+Risk level: ${riskLevelLabel(localAnalysis.riskLevel, language)}
 
-Локальные замечания:
+Local findings:
 ${findings}
 
-Конфигурация:
+Configuration:
 ${configContent.slice(0, MAX_CONFIG_CHARS)}`;
 }
