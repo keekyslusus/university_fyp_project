@@ -13,7 +13,7 @@ function createWindow() {
     height: 760,
     minWidth: 900,
     minHeight: 620,
-    title: "VPN Config Analyzer",
+    title: "Scandium - VPN config analyzer",
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
       contextIsolation: true,
@@ -25,6 +25,9 @@ function createWindow() {
     mainWindow.loadFile(path.join(__dirname, "../dist/index.html"));
   } else {
     mainWindow.loadURL("http://localhost:5173");
+    mainWindow.webContents.once("did-finish-load", () => {
+      mainWindow?.webContents.openDevTools({ mode: "detach" });
+    });
   }
 }
 

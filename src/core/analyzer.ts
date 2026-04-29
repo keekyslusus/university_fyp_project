@@ -54,7 +54,7 @@ export function formatReport(result: AnalysisResult) {
       : "Не распознан";
 
   const lines = [
-    "Отчёт анализа безопасности VPN-конфигурации",
+    "Scandium - отчёт анализа безопасности VPN-конфигурации",
     "",
     `Файл: ${result.fileName}`,
     `Тип: ${typeLabel}`,

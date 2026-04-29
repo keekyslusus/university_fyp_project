@@ -1,0 +1,352 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Scandium - VPN config analyzer</title>
+    <link rel="stylesheet" href="node_modules/material-symbols/rounded.css" />
+    <style>
+      @font-face {
+        font-family: "Google Sans";
+        src: url("public/font/GoogleSans_VariableFont.ttf") format("truetype");
+        font-weight: 400 700;
+        font-style: normal;
+        font-display: swap;
+      }
+
+      :root {
+        --md-sys-color-primary: #6750a4;
+        --md-sys-color-on-primary: #ffffff;
+        --md-sys-color-primary-container: #eaddff;
+        --md-sys-color-secondary-container: #e8def8;
+        --md-sys-color-on-secondary-container: #1d192b;
+        --md-sys-color-surface: #fef7ff;
+        --md-sys-color-on-surface: #1d1b20;
+        --md-sys-color-on-surface-variant: #49454f;
+        --md-sys-color-surface-container-low: #f7f2fa;
+        --md-sys-color-surface-container-high: #ece6f0;
+        --md-sys-color-outline-variant: #cac4d0;
+        --md-custom-error-container: #ffdad6;
+        --md-custom-on-error-container: #410002;
+        --md-custom-warning-container: #ffdf99;
+        --md-custom-on-warning-container: #3e2900;
+        font-family: "Google Sans", Arial, Helvetica, sans-serif;
+        color: var(--md-sys-color-on-surface);
+        background: var(--md-sys-color-surface);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background: var(--md-sys-color-surface);
+      }
+
+      .app {
+        width: min(1040px, calc(100vw - 32px));
+        margin: 0 auto;
+        padding: 40px 0 60px;
+      }
+
+      .header {
+        margin-bottom: 32px;
+      }
+
+      .header h1 {
+        margin: 0 0 8px;
+        font-size: 36px;
+        font-weight: 500;
+      }
+
+      .header p,
+      .muted,
+      .dropHero p,
+      .uploadPanel p {
+        margin: 0;
+        color: var(--md-sys-color-on-surface-variant);
+        font-size: 16px;
+        line-height: 1.5;
+      }
+
+      .material-symbols-rounded {
+        font-size: 21px;
+        line-height: 1;
+        font-variation-settings: "FILL" 0, "wght" 500, "GRAD" 0, "opsz" 24;
+      }
+
+      .dropHero {
+        display: grid;
+        min-height: 420px;
+        place-items: center;
+        gap: 22px;
+        text-align: center;
+        background: var(--md-sys-color-surface-container-low);
+        border: 2px dashed var(--md-sys-color-outline-variant);
+        border-radius: 28px;
+        padding: 48px 32px;
+        cursor: pointer;
+      }
+
+      .dropHeroIcon {
+        display: inline-grid;
+        width: 112px;
+        height: 112px;
+        place-items: center;
+        border-radius: 32px;
+        background: var(--md-sys-color-secondary-container);
+        color: var(--md-sys-color-primary);
+        font-size: 64px;
+        font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 48;
+      }
+
+      .dropHero h2 {
+        margin: 0 0 10px;
+        font-size: 28px;
+        font-weight: 500;
+      }
+
+      button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        min-height: 40px;
+        border: none;
+        border-radius: 100px;
+        background: var(--md-sys-color-secondary-container);
+        color: var(--md-sys-color-on-secondary-container);
+        padding: 10px 24px;
+        font: inherit;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+      }
+
+      .uploadPanel,
+      .panel {
+        margin-top: 24px;
+        background: var(--md-sys-color-surface-container-low);
+        border-radius: 24px;
+        padding: 28px;
+      }
+
+      .uploadPanel {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        border: 1px dashed var(--md-sys-color-outline-variant);
+      }
+
+      .uploadPanel > .material-symbols-rounded {
+        display: grid;
+        width: 48px;
+        height: 48px;
+        place-items: center;
+        border-radius: 16px;
+        background: var(--md-sys-color-secondary-container);
+        color: var(--md-sys-color-primary);
+      }
+
+      .uploadPanel h2,
+      .panel h2 {
+        margin: 0 0 8px;
+        font-size: 22px;
+        font-weight: 500;
+      }
+
+      .summary {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+        margin-top: 24px;
+      }
+
+      .summary div {
+        background: var(--md-sys-color-surface-container-high);
+        border-radius: 16px;
+        padding: 20px;
+      }
+
+      .label {
+        display: block;
+        margin-bottom: 8px;
+        color: var(--md-sys-color-on-surface-variant);
+        font-size: 12px;
+        font-weight: 500;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+      }
+
+      .summary strong {
+        display: block;
+        overflow-wrap: anywhere;
+        font-size: 18px;
+        font-weight: 500;
+      }
+
+      .sectionHeader {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 24px;
+      }
+
+      .sectionHeader h2 {
+        margin: 0;
+      }
+
+      .primaryButton {
+        background: var(--md-sys-color-primary);
+        color: var(--md-sys-color-on-primary);
+      }
+
+      .findings {
+        display: grid;
+        gap: 16px;
+      }
+
+      .finding {
+        background: var(--md-sys-color-surface);
+        border: 1px solid var(--md-sys-color-outline-variant);
+        border-radius: 16px;
+        padding: 20px;
+      }
+
+      .findingTop {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 16px;
+      }
+
+      .finding h3 {
+        display: flex;
+        gap: 10px;
+        margin: 0;
+        font-size: 18px;
+        font-weight: 500;
+      }
+
+      .finding h3 .material-symbols-rounded {
+        color: var(--md-sys-color-primary);
+      }
+
+      .finding p {
+        margin: 12px 0 0;
+        color: var(--md-sys-color-on-surface-variant);
+        line-height: 1.5;
+      }
+
+      .badge {
+        border-radius: 8px;
+        padding: 4px 10px;
+        font-size: 13px;
+        font-weight: 500;
+        white-space: nowrap;
+      }
+
+      .badge.high {
+        background: var(--md-custom-error-container);
+        color: var(--md-custom-on-error-container);
+      }
+
+      .badge.medium {
+        background: var(--md-custom-warning-container);
+        color: var(--md-custom-on-warning-container);
+      }
+
+      @media (max-width: 760px) {
+        .summary {
+          grid-template-columns: 1fr 1fr;
+        }
+
+        .sectionHeader,
+        .findingTop {
+          align-items: stretch;
+          flex-direction: column;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="app">
+      <header class="header">
+        <h1>Scandium</h1>
+        <p>Анализатор безопасности конфигураций OpenVPN и WireGuard</p>
+      </header>
+
+      <section class="dropHero">
+        <span class="material-symbols-rounded dropHeroIcon" aria-hidden="true">shield_lock</span>
+        <div>
+          <h2>Перетащите VPN-конфигурацию</h2>
+          <p>Перетащите файл в это окно, чтобы начать анализ.</p>
+          <p class="muted">Поддерживаются OpenVPN .ovpn, WireGuard .conf и текстовые файлы.</p>
+        </div>
+        <button type="button">
+          <span class="material-symbols-rounded" aria-hidden="true">upload_file</span>
+          Выбрать файл
+        </button>
+      </section>
+
+      <section class="uploadPanel">
+        <span class="material-symbols-rounded" aria-hidden="true">upload_file</span>
+        <div>
+          <h2>Загрузить другой файл</h2>
+          <p class="muted">Перетащите конфигурацию сюда или выберите файл вручную.</p>
+        </div>
+      </section>
+
+      <section class="summary">
+        <div>
+          <span class="label">Файл</span>
+          <strong>insecure-openvpn.ovpn</strong>
+        </div>
+        <div>
+          <span class="label">Тип</span>
+          <strong>openvpn</strong>
+        </div>
+        <div>
+          <span class="label">Оценка</span>
+          <strong>12/100</strong>
+        </div>
+        <div>
+          <span class="label">Риск</span>
+          <strong>Высокий</strong>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="sectionHeader">
+          <h2>Замечания и рекомендации</h2>
+          <button type="button" class="primaryButton">
+            <span class="material-symbols-rounded" aria-hidden="true">download</span>
+            Экспорт отчёта
+          </button>
+        </div>
+
+        <div class="findings">
+          <article class="finding">
+            <div class="findingTop">
+              <h3><span class="material-symbols-rounded">report</span>Обнаружен слабый алгоритм шифрования</h3>
+              <span class="badge high">Высокий</span>
+            </div>
+            <p>В конфигурации OpenVPN указан устаревший или небезопасный cipher. Такие алгоритмы снижают стойкость защищённого канала.</p>
+            <p><strong>Рекомендация:</strong> Используйте современные AEAD-алгоритмы, например AES-256-GCM или CHACHA20-POLY1305.</p>
+          </article>
+
+          <article class="finding">
+            <div class="findingTop">
+              <h3><span class="material-symbols-rounded">warning</span>Не найдено дополнительное усиление TLS-канала</h3>
+              <span class="badge medium">Средний</span>
+            </div>
+            <p>Отсутствие tls-auth или tls-crypt может упростить сканирование VPN-сервера и некоторые DoS-сценарии.</p>
+            <p><strong>Рекомендация:</strong> Для новых конфигураций предпочтительно использовать tls-crypt, если это поддерживается сервером.</p>
+          </article>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

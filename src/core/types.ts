@@ -25,3 +25,13 @@ export interface AnalysisResult {
   findings: Finding[];
   summary: string;
 }
+
+export interface AiAnalysis {
+  shortText: string;
+  details: string;
+  summary: string;
+  risks: string[];
+  actions: string[];
+  conclusion: string;
+  cached: boolean;
+}

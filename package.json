@@ -1,5 +1,5 @@
 {
-  "name": "vpn-config-analyzer",
+  "name": "scandium",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -13,6 +13,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@google/genai": "^1.50.1",
+    "material-symbols": "^0.44.4",
     "solid-js": "^1.9.5",
     "vite": "^6.2.0",
     "vite-plugin-solid": "^2.11.0"
@@ -20,7 +22,7 @@
   "devDependencies": {
     "@types/node": "^22.13.10",
     "concurrently": "^9.1.2",
-    "electron": "^35.1.4",
+    "electron": "^41.3.0",
     "typescript": "^5.8.2",
     "wait-on": "^8.0.3"
   }
