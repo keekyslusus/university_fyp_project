@@ -5,6 +5,7 @@ import { AiFindingCard } from "./AiFindingCard";
 import { AiKeyPanel } from "./AiKeyPanel";
 import { FindingCard } from "./FindingCard";
 import { SummaryCards } from "./SummaryCards";
+import { useI18n } from "../i18n/I18nProvider";
 
 interface ResultsPanelProps {
   analysis: AnalysisResult;
@@ -22,16 +23,18 @@ interface ResultsPanelProps {
 }
 
 export function ResultsPanel(props: ResultsPanelProps) {
+  const { t } = useI18n();
+
   return (
     <>
       <SummaryCards analysis={props.analysis} />
 
       <section class="panel">
         <div class="sectionHeader">
-          <h2>Замечания и рекомендации</h2>
+          <h2>{t("findingsTitle")}</h2>
           <button type="button" class="ripple-target" onClick={props.onExport}>
             <span class="material-symbols-rounded" aria-hidden="true">download</span>
-            Экспорт отчёта
+            {t("exportReport")}
           </button>
         </div>
 

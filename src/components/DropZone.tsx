@@ -1,3 +1,5 @@
+import { useI18n } from "../i18n/I18nProvider";
+
 interface DropZoneProps {
   isDragging: boolean;
   compact?: boolean;
@@ -8,6 +10,8 @@ interface DropZoneProps {
 }
 
 export function DropZone(props: DropZoneProps) {
+  const { t } = useI18n();
+
   if (props.compact) {
     return (
       <section
@@ -21,8 +25,8 @@ export function DropZone(props: DropZoneProps) {
       >
         <span class="material-symbols-rounded" aria-hidden="true">upload_file</span>
         <div>
-          <h2>Загрузить другой файл</h2>
-          <p class="muted">Перетащите конфигурацию сюда или выберите файл вручную.</p>
+          <h2>{t("uploadAnotherTitle")}</h2>
+          <p class="muted">{t("uploadAnotherText")}</p>
         </div>
       </section>
     );
@@ -46,9 +50,9 @@ export function DropZone(props: DropZoneProps) {
     >
       <span class="material-symbols-rounded dropHeroIcon" aria-hidden="true">shield_lock</span>
       <div>
-        <h2>Перетащите VPN-конфигурацию</h2>
-        <p>Перетащите файл в это окно, чтобы начать анализ.</p>
-        <p class="muted">Поддерживаются OpenVPN .ovpn, WireGuard .conf и текстовые файлы.</p>
+        <h2>{t("dragTitle")}</h2>
+        <p>{t("dragText")}</p>
+        <p class="muted">{t("supportedFiles")}</p>
       </div>
       <button
         type="button"
@@ -59,7 +63,7 @@ export function DropZone(props: DropZoneProps) {
         }}
       >
         <span class="material-symbols-rounded" aria-hidden="true">upload_file</span>
-        Выбрать файл
+        {t("chooseFile")}
       </button>
     </section>
   );

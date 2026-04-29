@@ -16,14 +16,25 @@ function scoreFindings(findings: Finding[]) {
 
 function riskLevel(score: number): AnalysisResult["riskLevel"] {
   if (score >= 75) {
-    return "Низкий";
+    return "low";
   }
 
   if (score >= 45) {
-    return "Средний";
+    return "medium";
   }
 
-  return "Высокий";
+  return "high";
+}
+
+function riskLevelRu(level: AnalysisResult["riskLevel"]) {
+  switch (level) {
+    case "low":
+      return "Низкий";
+    case "medium":
+      return "Средний";
+    case "high":
+      return "Высокий";
+  }
 }
 
 export function analyzeConfig(fileName: string, content: string): AnalysisResult {
@@ -42,7 +53,7 @@ export function analyzeConfig(fileName: string, content: string): AnalysisResult
     score,
     riskLevel: level,
     findings,
-    summary: `Файл ${fileName} распознан как ${parsed.type}. Итоговая оценка: ${score}/100. Уровень риска: ${level}.`
+    summary: `Файл ${fileName} распознан как ${parsed.type}. Итоговая оценка: ${score}/100. Уровень риска: ${riskLevelRu(level)}.`
   };
 }
 
@@ -59,7 +70,7 @@ export function formatReport(result: AnalysisResult) {
     `Файл: ${result.fileName}`,
     `Тип: ${typeLabel}`,
     `Оценка: ${result.score}/100`,
-    `Уровень риска: ${result.riskLevel}`,
+    `Уровень риска: ${riskLevelRu(result.riskLevel)}`,
     "",
     "Найденные замечания:"
   ];

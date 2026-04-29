@@ -21,7 +21,7 @@ export interface AnalysisResult {
   fileName: string;
   type: VpnType;
   score: number;
-  riskLevel: "Низкий" | "Средний" | "Высокий";
+  riskLevel: "low" | "medium" | "high";
   findings: Finding[];
   summary: string;
 }

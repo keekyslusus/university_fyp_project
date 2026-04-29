@@ -1,11 +1,5 @@
 import type { Finding, Severity } from "../core/types";
-
-const severityLabel: Record<Severity, string> = {
-  info: "Инфо",
-  low: "Низкий",
-  medium: "Средний",
-  high: "Высокий"
-};
+import { useI18n } from "../i18n/I18nProvider";
 
 function severityIcon(severity: Severity) {
   switch (severity) {
@@ -25,6 +19,14 @@ interface FindingCardProps {
 }
 
 export function FindingCard(props: FindingCardProps) {
+  const { t } = useI18n();
+  const severityLabel: Record<Severity, string> = {
+    info: t("severityInfo"),
+    low: t("severityLow"),
+    medium: t("severityMedium"),
+    high: t("severityHigh")
+  };
+
   return (
     <article class="finding">
       <div class="findingTop">
@@ -35,7 +37,7 @@ export function FindingCard(props: FindingCardProps) {
         <span class={`badge ${props.finding.severity}`}>{severityLabel[props.finding.severity]}</span>
       </div>
       <p>{props.finding.description}</p>
-      <p><strong>Рекомендация:</strong> {props.finding.recommendation}</p>
+      <p><strong>{t("recommendation")}:</strong> {props.finding.recommendation}</p>
     </article>
   );
 }

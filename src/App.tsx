@@ -10,6 +10,7 @@ import { Header } from "./components/Header";
 import { LoadingPanel } from "./components/LoadingPanel";
 import { MessagePanel } from "./components/MessagePanel";
 import { ResultsPanel } from "./components/ResultsPanel";
+import { I18nProvider, useI18n } from "./i18n/I18nProvider";
 import "./components/ripple.js";
 import "./styles.css";
 import { downloadText } from "./utils/download";
@@ -21,6 +22,7 @@ interface AiRequest {
 }
 
 function App() {
+  const { setLanguage, t } = useI18n();
   const [result, setResult] = createSignal<AnalysisResult | null>(null);
   const [error, setError] = createSignal("");
   const [isDragging, setIsDragging] = createSignal(false);
@@ -37,7 +39,17 @@ function App() {
   onMount(() => {
     const handler = (event: PointerEvent) => window.VibeClownRipple?.handleDelegatedRipple(event);
     window.addEventListener("pointerdown", handler, true);
-    onCleanup(() => window.removeEventListener("pointerdown", handler, true));
+
+    const removeLanguageListener = window.scandium?.onLanguageChanged((language) => {
+      if (language === "ru" || language === "en" || language === "kk") {
+        setLanguage(language);
+      }
+    });
+
+    onCleanup(() => {
+      window.removeEventListener("pointerdown", handler, true);
+      removeLanguageListener?.();
+    });
   });
 
   async function analyzeFile(file: File) {
@@ -55,7 +67,7 @@ function App() {
       setResult(localResult);
       void runAiAnalysis({ fileName: file.name, text, localResult });
     } catch {
-      setError("Не удалось прочитать файл конфигурации.");
+      setError(t("readFileError"));
     } finally {
       setIsAnalyzing(false);
       clearFileInput();
@@ -83,7 +95,7 @@ function App() {
     try {
       setAiAnalysis(await analyzeWithGemini(request.fileName, request.text, request.localResult));
     } catch (caught) {
-      setAiError(caught instanceof Error ? caught.message : "Не удалось выполнить анализ от ИИ.");
+      setAiError(caught instanceof Error ? caught.message : t("aiGenericError"));
     } finally {
       setIsAiLoading(false);
     }
@@ -96,7 +108,7 @@ function App() {
     setApiKeyInput("");
 
     if (!key) {
-      setAiError("Gemini API key очищен.");
+      setAiError(t("apiKeyCleared"));
       return;
     }
 
@@ -207,4 +219,11 @@ function App() {
   );
 }
 
-render(() => <App />, document.getElementById("root")!);
+render(
+  () => (
+    <I18nProvider>
+      <App />
+    </I18nProvider>
+  ),
+  document.getElementById("root")!
+);

@@ -1,6 +1,17 @@
 import type { AnalysisResult } from "./types";
 import { MAX_CONFIG_CHARS } from "./aiConfig";
 
+function riskLevelRu(level: AnalysisResult["riskLevel"]) {
+  switch (level) {
+    case "low":
+      return "низкий";
+    case "medium":
+      return "средний";
+    case "high":
+      return "высокий";
+  }
+}
+
 export function buildAiPrompt(fileName: string, configContent: string, localAnalysis: AnalysisResult) {
   const findings = localAnalysis.findings
     .map((finding) => `- ${finding.severity}: ${finding.title}. ${finding.description}`)
@@ -23,7 +34,7 @@ export function buildAiPrompt(fileName: string, configContent: string, localAnal
 Файл: ${fileName}
 Тип: ${localAnalysis.type}
 Оценка Scandium: ${localAnalysis.score}/100
-Уровень риска: ${localAnalysis.riskLevel}
+Уровень риска: ${riskLevelRu(localAnalysis.riskLevel)}
 
 Локальные замечания:
 ${findings}

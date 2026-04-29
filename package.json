@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "main": "dist-electron/main.js",
+  "main": "dist-electron/main.mjs",
   "scripts": {
-    "dev": "npm run build:electron && concurrently -k \"vite\" \"wait-on http://localhost:5173 && electron dist-electron/main.js\"",
+    "dev": "npm run build:electron && concurrently -k \"vite\" \"wait-on http://localhost:5173 && electron dist-electron/main.mjs\"",
     "dev:web": "vite --host 127.0.0.1",
     "build": "npm run build:electron && vite build",
     "build:electron": "tsc -p tsconfig.electron.json",

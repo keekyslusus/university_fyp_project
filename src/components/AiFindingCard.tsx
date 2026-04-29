@@ -1,5 +1,6 @@
 import { Show } from "solid-js";
 import type { AiAnalysis } from "../core/types";
+import { useI18n } from "../i18n/I18nProvider";
 import CircularLoadingIndicator from "./CircularLoadingIndicator";
 
 interface AiFindingCardProps {
@@ -10,22 +11,24 @@ interface AiFindingCardProps {
 }
 
 export function AiFindingCard(props: AiFindingCardProps) {
+  const { t } = useI18n();
+
   return (
     <article class="finding aiFinding">
       <div class="findingTop">
         <h3>
           <span class="material-symbols-rounded" aria-hidden="true">auto_awesome</span>
-          Анализ от ИИ
+          {t("aiAnalysis")}
         </h3>
         <Show when={props.analysis?.cached}>
-          <span class="badge info">Кэш</span>
+          <span class="badge info">{t("cache")}</span>
         </Show>
       </div>
 
       <Show when={props.isLoading}>
         <div class="aiLoadingRow">
           <CircularLoadingIndicator active={true} />
-          <p>Gemini анализирует конфигурацию...</p>
+          <p>{t("aiLoading")}</p>
         </div>
       </Show>
 
@@ -42,10 +45,10 @@ export function AiFindingCard(props: AiFindingCardProps) {
                               </span>
                             ))}
                           </div>
-                        </Show>
+            </Show>
                         <button type="button" class="textButton ripple-target" onClick={props.onOpenDetails}>
               <span class="material-symbols-rounded" aria-hidden="true">open_in_new</span>
-              Подробнее
+              {t("details")}
             </button>
           </>
         )}

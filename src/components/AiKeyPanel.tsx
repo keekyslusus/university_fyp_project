@@ -1,3 +1,5 @@
+import { useI18n } from "../i18n/I18nProvider";
+
 interface AiKeyPanelProps {
   value: string;
   onInput: (value: string) => void;
@@ -5,12 +7,14 @@ interface AiKeyPanelProps {
 }
 
 export function AiKeyPanel(props: AiKeyPanelProps) {
+  const { t } = useI18n();
+
   return (
     <div class="aiKeyPanel">
       <span class="material-symbols-rounded" aria-hidden="true">key</span>
       <div>
-        <h3>Gemini API key</h3>
-        <p>Добавьте ключ, чтобы Scandium показал краткий анализ от ИИ. Ключ сохраняется только локально в браузере/Electron.</p>
+        <h3>{t("geminiApiKey")}</h3>
+        <p>{t("geminiApiKeyHelp")}</p>
       </div>
       <input
         type="password"
@@ -18,7 +22,7 @@ export function AiKeyPanel(props: AiKeyPanelProps) {
         placeholder="AIza..."
         onInput={(event) => props.onInput(event.currentTarget.value)}
       />
-      <button type="button" class="secondaryButton ripple-target" onClick={props.onSave}>Сохранить</button>
+      <button type="button" class="secondaryButton ripple-target" onClick={props.onSave}>{t("save")}</button>
     </div>
   );
 }

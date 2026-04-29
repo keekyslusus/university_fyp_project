@@ -1,5 +1,6 @@
 import { createEffect, createSignal, onCleanup, Show } from "solid-js";
 import type { AiAnalysis } from "../core/types";
+import { useI18n } from "../i18n/I18nProvider";
 
 interface AiDialogProps {
   analysis: AiAnalysis | null;
@@ -8,6 +9,7 @@ interface AiDialogProps {
 }
 
 export function AiDialog(props: AiDialogProps) {
+  const { t } = useI18n();
   const [isMounted, setIsMounted] = createSignal(false);
   const [isVisible, setIsVisible] = createSignal(false);
   let hideTimer: number | undefined;
@@ -61,34 +63,34 @@ export function AiDialog(props: AiDialogProps) {
             onClick={(event) => event.stopPropagation()}
           >
             <div class="dialogHeader">
-              <h2 id="ai-dialog-title">Анализ от ИИ</h2>
-              <button type="button" class="iconButton ripple-target" aria-label="Закрыть" onClick={props.onClose}>
+              <h2 id="ai-dialog-title">{t("aiDialogTitle")}</h2>
+              <button type="button" class="iconButton ripple-target" aria-label={t("close")} onClick={props.onClose}>
                 <span class="material-symbols-rounded" aria-hidden="true">close</span>
               </button>
             </div>
 
             <div class="aiDialogContent">
               <section>
-                <h3>Краткий вывод</h3>
+                <h3>{t("summary")}</h3>
                 <p>{analysis().summary}</p>
               </section>
 
               <section>
-                <h3>Ключевые риски</h3>
+                <h3>{t("keyRisks")}</h3>
                 <ul>
                   {analysis().risks.map((risk) => <li>{risk}</li>)}
                 </ul>
               </section>
 
               <section>
-                <h3>Что сделать</h3>
+                <h3>{t("actions")}</h3>
                 <ul>
                   {analysis().actions.map((action) => <li>{action}</li>)}
                 </ul>
               </section>
 
               <section>
-                <h3>Итог</h3>
+                <h3>{t("conclusion")}</h3>
                 <p>{analysis().conclusion}</p>
               </section>
             </div>
