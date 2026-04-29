@@ -10,6 +10,24 @@ type Language = "ru" | "en" | "kk";
 let mainWindow: BrowserWindow | null = null;
 let currentLanguage: Language = "en";
 
+function publicAssetPath(...segments: string[]) {
+  return app.isPackaged
+    ? path.join(process.resourcesPath, ...segments)
+    : path.join(__dirname, "../public", ...segments);
+}
+
+function windowIconPath() {
+  if (process.platform === "win32") {
+    return publicAssetPath("icon", "ico128.ico");
+  }
+
+  if (process.platform === "linux") {
+    return publicAssetPath("icon", "icon512.png");
+  }
+
+  return undefined;
+}
+
 const menuText: Record<Language, {
   file: string;
   edit: string;
@@ -127,6 +145,7 @@ function createWindow() {
     minWidth: 900,
     minHeight: 620,
     title: "Scandium - VPN config analyzer",
+    icon: windowIconPath(),
     webPreferences: {
       preload: path.join(__dirname, "preload.cjs"),
       contextIsolation: true,
