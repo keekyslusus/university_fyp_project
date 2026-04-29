@@ -1,0 +1,27 @@
+{
+  "name": "vpn-config-analyzer",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "dist-electron/main.js",
+  "scripts": {
+    "dev": "npm run build:electron && concurrently -k \"vite\" \"wait-on http://localhost:5173 && electron dist-electron/main.js\"",
+    "dev:web": "vite --host 127.0.0.1",
+    "build": "npm run build:electron && vite build",
+    "build:electron": "tsc -p tsconfig.electron.json",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "solid-js": "^1.9.5",
+    "vite": "^6.2.0",
+    "vite-plugin-solid": "^2.11.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.10",
+    "concurrently": "^9.1.2",
+    "electron": "^35.1.4",
+    "typescript": "^5.8.2",
+    "wait-on": "^8.0.3"
+  }
+}

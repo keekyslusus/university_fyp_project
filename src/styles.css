@@ -1,0 +1,181 @@
+:root {
+  font-family: Arial, Helvetica, sans-serif;
+  color: #1f2933;
+  background: #f4f6f8;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+.app {
+  width: min(1040px, calc(100vw - 32px));
+  margin: 0 auto;
+  padding: 28px 0 40px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.header h1 {
+  margin: 0 0 6px;
+  font-size: 30px;
+}
+
+.header p,
+.muted,
+.empty p {
+  margin: 0;
+  color: #59636e;
+}
+
+.panel,
+.empty {
+  background: #ffffff;
+  border: 1px solid #d9dee4;
+  border-radius: 6px;
+  padding: 20px;
+  margin-bottom: 16px;
+}
+
+.panel h2,
+.empty h2 {
+  margin: 0 0 10px;
+  font-size: 20px;
+}
+
+input[type="file"] {
+  display: block;
+  margin-top: 14px;
+}
+
+.error {
+  margin: 12px 0 0;
+  color: #b42318;
+}
+
+.summary {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.summary div {
+  background: #ffffff;
+  border: 1px solid #d9dee4;
+  border-radius: 6px;
+  padding: 16px;
+}
+
+.label {
+  display: block;
+  margin-bottom: 6px;
+  color: #59636e;
+  font-size: 13px;
+}
+
+.summary strong {
+  display: block;
+  overflow-wrap: anywhere;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+.sectionHeader h2 {
+  margin: 0;
+}
+
+button {
+  border: 1px solid #1f2933;
+  border-radius: 4px;
+  background: #1f2933;
+  color: #ffffff;
+  padding: 9px 12px;
+  cursor: pointer;
+}
+
+.findings {
+  display: grid;
+  gap: 12px;
+}
+
+.finding {
+  border: 1px solid #d9dee4;
+  border-radius: 6px;
+  padding: 14px;
+}
+
+.findingTop {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.finding h3 {
+  margin: 0;
+  font-size: 17px;
+}
+
+.finding p {
+  margin: 10px 0 0;
+  line-height: 1.45;
+}
+
+.badge {
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.badge.info {
+  background: #e7f0ff;
+  color: #1849a9;
+}
+
+.badge.low {
+  background: #ecfdf3;
+  color: #027a48;
+}
+
+.badge.medium {
+  background: #fffaeb;
+  color: #b54708;
+}
+
+.badge.high {
+  background: #fef3f2;
+  color: #b42318;
+}
+
+@media (max-width: 760px) {
+  .summary {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .sectionHeader {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}
