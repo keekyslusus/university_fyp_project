@@ -3,71 +3,19 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "main": "dist-electron/main.mjs",
   "scripts": {
-    "dev": "npm run build:electron && concurrently -k \"vite\" \"wait-on http://localhost:5173 && electron dist-electron/main.mjs\"",
+    "dev": "npm run dev:electrobun",
+    "dev:electrobun": "vite build && electrobun dev --watch",
+    "dev:electrobun:hmr": "concurrently -k \"vite --port 5173\" \"electrobun dev --watch\"",
     "dev:web": "vite --host 127.0.0.1",
-    "build": "npm run build:electron && vite build",
-    "build:electron": "tsc -p tsconfig.electron.json",
+    "build": "npm run build:electrobun",
+    "build:electrobun": "vite build && electrobun build --env=stable",
+    "build:electrobun:canary": "vite build && electrobun build --env=canary",
     "build:test": "tsc -p tsconfig.test.json",
-    "release:win": "npm run build && electron-builder --win nsis portable --x64",
-    "release:linux": "npm run build && electron-builder --linux AppImage deb --x64",
+    "release:win": "npm run build:electrobun",
     "preview": "vite preview",
     "test": "npm run build:test && node scripts/prepare-test-build.cjs && node .tmp-test/tests/run-tests.js",
     "typecheck": "tsc --noEmit"
-  },
-  "build": {
-    "appId": "kz.edu.scandium",
-    "productName": "Scandium",
-    "directories": {
-      "output": "release"
-    },
-    "files": [
-      "dist/**/*",
-      "dist-electron/**/*",
-      "package.json"
-    ],
-    "extraResources": [
-      {
-        "from": "public/icon",
-        "to": "icon"
-      }
-    ],
-    "win": {
-      "target": [
-        {
-          "target": "nsis",
-          "arch": [
-            "x64"
-          ]
-        },
-        {
-          "target": "portable",
-          "arch": [
-            "x64"
-          ]
-        }
-      ],
-      "icon": "public/icon/icon.ico"
-    },
-    "linux": {
-      "target": [
-        {
-          "target": "AppImage",
-          "arch": [
-            "x64"
-          ]
-        },
-        {
-          "target": "deb",
-          "arch": [
-            "x64"
-          ]
-        }
-      ],
-      "icon": "public/icon/icon512.png",
-      "category": "Utility"
-    }
   },
   "dependencies": {
     "@google/genai": "^1.50.1",
@@ -77,11 +25,13 @@
     "vite-plugin-solid": "^2.11.0"
   },
   "devDependencies": {
+    "@types/bun": "^1.3.13",
     "@types/node": "^22.13.10",
+    "@types/three": "^0.184.0",
+    "bun": "^1.3.13",
     "concurrently": "^9.1.2",
-    "electron": "^41.3.0",
-    "electron-builder": "^26.0.12",
-    "typescript": "^5.8.2",
-    "wait-on": "^8.0.3"
+    "electrobun": "^1.17.3-beta.12",
+    "rcedit": "^5.0.2",
+    "typescript": "^5.8.2"
   }
 }

@@ -1,4 +1,4 @@
-import { createEffect, createSignal, onCleanup, onMount, Show } from "solid-js";
+import { createSignal, onCleanup, onMount, Show } from "solid-js";
 import { render } from "solid-js/web";
 import "material-symbols/rounded.css";
 import { analyzeWithGemini } from "./core/aiAnalysis";
@@ -26,7 +26,7 @@ interface AiRequest {
 }
 
 function App() {
-  const { language, setLanguage, t } = useI18n();
+  const { language, t } = useI18n();
   const [result, setResult] = createSignal<AnalysisResult | null>(null);
   const [error, setError] = createSignal("");
   const [isDragging, setIsDragging] = createSignal(false);
@@ -40,23 +40,12 @@ function App() {
   const [lastAiRequest, setLastAiRequest] = createSignal<AiRequest | null>(null);
   let fileInputRef: HTMLInputElement | undefined;
 
-  createEffect(() => {
-    window.scandium?.setLanguage(language());
-  });
-
   onMount(() => {
     const handler = (event: PointerEvent) => window.VibeClownRipple?.handleDelegatedRipple(event);
     window.addEventListener("pointerdown", handler, true);
 
-    const removeLanguageListener = window.scandium?.onLanguageChanged((language) => {
-      if (language === "ru" || language === "en" || language === "kk") {
-        setLanguage(language);
-      }
-    });
-
     onCleanup(() => {
       window.removeEventListener("pointerdown", handler, true);
-      removeLanguageListener?.();
     });
   });
 

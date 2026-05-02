@@ -1,9 +1,9 @@
 export type Language = "ru" | "en" | "kk";
 
 export const languages: Array<{ code: Language; label: string }> = [
-  { code: "ru", label: "Русский" },
   { code: "en", label: "English" },
-  { code: "kk", label: "Қазақша" }
+  { code: "kk", label: "Қазақша" },
+  { code: "ru", label: "Русский" }
 ];
 
 export const defaultLanguage: Language = "en";
@@ -42,7 +42,7 @@ export const dictionaries = {
     conclusion: "Итог",
     recommendation: "Рекомендация",
     geminiApiKey: "Ключ советника",
-    geminiApiKeyHelp: "Добавьте ключ, чтобы Scandium сформировал краткие рекомендации по исправлению. Ключ сохраняется только локально в браузере/Electron.",
+    geminiApiKeyHelp: "Добавьте ключ, чтобы Scandium сформировал краткие рекомендации по исправлению. Ключ сохраняется только локально в браузере/desktop-приложении.",
     save: "Сохранить",
     evidence: "Доказательство",
     confidence: "Уверенность",
@@ -85,7 +85,7 @@ export const dictionaries = {
     conclusion: "Conclusion",
     recommendation: "Recommendation",
     geminiApiKey: "Advisor key",
-    geminiApiKeyHelp: "Add a key so Scandium can prepare brief remediation guidance. The key is stored only locally in the browser/Electron.",
+    geminiApiKeyHelp: "Add a key so Scandium can prepare brief remediation guidance. The key is stored only locally in the browser/desktop app.",
     save: "Save",
     evidence: "Evidence",
     confidence: "Confidence",
@@ -128,7 +128,7 @@ export const dictionaries = {
     conclusion: "Қорытынды",
     recommendation: "Ұсыныс",
     geminiApiKey: "Кеңесші кілті",
-    geminiApiKeyHelp: "Scandium қысқаша түзету ұсыныстарын дайындауы үшін кілт қосыңыз. Кілт тек браузер/Electron ішінде жергілікті сақталады.",
+    geminiApiKeyHelp: "Scandium қысқаша түзету ұсыныстарын дайындауы үшін кілт қосыңыз. Кілт тек браузер/desktop қолданба ішінде жергілікті сақталады.",
     save: "Сақтау",
     evidence: "Дәлел",
     confidence: "Сенімділік",
