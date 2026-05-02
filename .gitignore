@@ -1,6 +1,7 @@
 node_modules/
 dist/
 dist-electron/
+release/
 .tmp-test/
 .env
 .DS_Store

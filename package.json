@@ -10,9 +10,64 @@
     "build": "npm run build:electron && vite build",
     "build:electron": "tsc -p tsconfig.electron.json",
     "build:test": "tsc -p tsconfig.test.json",
+    "release:win": "npm run build && electron-builder --win nsis portable --x64",
+    "release:linux": "npm run build && electron-builder --linux AppImage deb --x64",
     "preview": "vite preview",
     "test": "npm run build:test && node scripts/prepare-test-build.cjs && node .tmp-test/tests/run-tests.js",
     "typecheck": "tsc --noEmit"
+  },
+  "build": {
+    "appId": "kz.edu.scandium",
+    "productName": "Scandium",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "dist-electron/**/*",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "public/icon",
+        "to": "icon"
+      }
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "public/icon/icon.ico"
+    },
+    "linux": {
+      "target": [
+        {
+          "target": "AppImage",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "deb",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "public/icon/icon512.png",
+      "category": "Utility"
+    }
   },
   "dependencies": {
     "@google/genai": "^1.50.1",
@@ -25,6 +80,7 @@
     "@types/node": "^22.13.10",
     "concurrently": "^9.1.2",
     "electron": "^41.3.0",
+    "electron-builder": "^26.0.12",
     "typescript": "^5.8.2",
     "wait-on": "^8.0.3"
   }

@@ -24,6 +24,7 @@ Scandium does not execute the VPN configuration and does not perform network sca
 - optional Remediation Advisor for concise fix guidance;
 - reproducible evaluation samples and automated tests.
 
+
 ## Rule Categories
 
 Current rules cover:
@@ -158,6 +159,15 @@ npm run build
 - `electron` - Electron main/preload code.
 - `samples` - demo and evaluation VPN configurations.
 - `tests` - parser and evaluation tests.
+
+## Technology Stack
+
+- TypeScript - core application logic, static-analysis engine, typed findings, scoring, and tests.
+- SolidJS - reactive frontend UI for file upload, findings, score summaries, dialogs, and localized views.
+- Vite - fast development server and production web build pipeline.
+- Electron/Electron Builder - cross-platform desktop shell for Windows and Linux release builds.
+- Google GenAI SDK - optional Gemini-powered Remediation Advisor.
+- Node.js and npm - dependency management, build scripts, test execution, and release automation.
 
 ## Limitations
 
