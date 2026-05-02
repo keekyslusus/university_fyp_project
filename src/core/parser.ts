@@ -1,4 +1,4 @@
-import type { ParsedConfig, VpnType } from "./types";
+import type { ConfigEntry, Evidence, ParsedConfig, VpnType } from "./types";
 
 function stripInlineComment(line: string) {
   const trimmed = line.trim();
@@ -33,9 +33,11 @@ export function parseConfig(content: string): ParsedConfig {
   const type = detectType(content);
   const directives: Record<string, string[]> = {};
   const sections: Record<string, Record<string, string[]>> = {};
+  const entries: ConfigEntry[] = [];
   let currentSection = "";
 
-  for (const sourceLine of content.split(/\r?\n/)) {
+  for (const [index, sourceLine] of content.split(/\r?\n/).entries()) {
+    const lineNumber = index + 1;
     const line = stripInlineComment(sourceLine);
 
     if (!line || line.startsWith("<") || line.startsWith("</")) {
@@ -56,6 +58,13 @@ export function parseConfig(content: string): ParsedConfig {
       const target = sections[currentSection || "global"] ??= {};
       target[key] ??= [];
       target[key].push(value);
+      entries.push({
+        key,
+        value,
+        line: lineNumber,
+        raw: sourceLine.trim(),
+        section: currentSection || "global"
+      });
       continue;
     }
 
@@ -69,13 +78,20 @@ export function parseConfig(content: string): ParsedConfig {
 
     directives[key] ??= [];
     directives[key].push(value);
+    entries.push({
+      key,
+      value,
+      line: lineNumber,
+      raw: sourceLine.trim()
+    });
   }
 
   return {
     type,
     raw: content,
     directives,
-    sections
+    sections,
+    entries
   };
 }
 
@@ -83,10 +99,35 @@ export function hasDirective(config: ParsedConfig, key: string) {
   return key.toLowerCase() in config.directives;
 }
 
+export function hasSection(config: ParsedConfig, section: string) {
+  return section.toLowerCase() in config.sections;
+}
+
 export function valuesOf(config: ParsedConfig, key: string) {
   return config.directives[key.toLowerCase()] ?? [];
 }
 
+export function entriesOf(config: ParsedConfig, key: string) {
+  const normalizedKey = key.toLowerCase();
+  return config.entries.filter((entry) => !entry.section && entry.key === normalizedKey);
+}
+
 export function sectionValues(config: ParsedConfig, section: string, key: string) {
   return config.sections[section.toLowerCase()]?.[key.toLowerCase()] ?? [];
+}
+
+export function sectionEntries(config: ParsedConfig, section: string, key: string) {
+  const normalizedSection = section.toLowerCase();
+  const normalizedKey = key.toLowerCase();
+  return config.entries.filter((entry) => entry.section === normalizedSection && entry.key === normalizedKey);
+}
+
+export function evidenceFromEntry(entry: ConfigEntry): Evidence {
+  return {
+    line: entry.line,
+    directive: entry.key,
+    value: entry.value,
+    raw: entry.raw,
+    section: entry.section
+  };
 }

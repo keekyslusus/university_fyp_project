@@ -1,53 +1,167 @@
-# Scandium - VPN config analyzer
+# Scandium - Static VPN Configuration Security Analyzer
 
-Настольное приложение Scandium для анализа безопасности конфигурационных файлов OpenVPN и WireGuard.
+Scandium is a desktop static-analysis tool for OpenVPN and WireGuard configuration files. It inspects VPN client profiles without connecting to a VPN server, detects security misconfigurations with a rule-based engine, assigns an explainable risk score, and produces remediation guidance.
 
-## Возможности
+The project is designed as a cybersecurity/software-engineering FYP artifact: it includes parsing, rule matching, evidence-based findings, weighted scoring, remediation guidance, localization, and a reproducible evaluation dataset.
 
-- загрузка `.ovpn`, `.conf` или `.txt` файла;
-- автоматическое определение OpenVPN/WireGuard;
-- поиск потенциально небезопасных параметров;
-- расчёт общей оценки безопасности;
-- рекомендации по исправлению найденных проблем;
-- экспорт отчёта в `.txt`.
+## Static Analysis Pipeline
 
-## Запуск
+```text
+File input -> VPN type detection -> Parsing -> Rule engine -> Findings -> Scoring -> Report -> Remediation Advisor
+```
+
+Scandium does not execute the VPN configuration and does not perform network scanning. It performs static analysis over the configuration text and reports risks inferred from directives, sections, missing parameters, and malformed values.
+
+## Features
+
+- OpenVPN `.ovpn` and WireGuard `.conf` file analysis;
+- automatic VPN type detection;
+- parser with line-number evidence;
+- declarative rule engine;
+- severity, category, confidence, and weighted penalty for each finding;
+- explainable score breakdown by risk category;
+- exportable `.txt` security report;
+- optional Remediation Advisor for concise fix guidance;
+- reproducible evaluation samples and automated tests.
+
+## Rule Categories
+
+Current rules cover:
+
+- `cryptography` - weak cipher, weak auth, missing or weak TLS minimum version;
+- `authentication` - missing server certificate checks and identity verification;
+- `privacy` - compression risks and DNS leak scenarios;
+- `routing` - full tunnel and protocol-related routing warnings;
+- `dns` - missing DNS and full-tunnel-without-DNS risks;
+- `hardening` - missing TLS hardening, dangerous script execution, missing keepalive;
+- `credential-exposure` - cached credentials, inline keys, private key material;
+- `configuration-validity` - missing sections, malformed WireGuard keys, malformed endpoints, incomplete profiles.
+
+Each finding can include evidence such as:
+
+```text
+line 5: cipher BF-CBC
+```
+
+This makes the output closer to static code analyzers such as ESLint or SonarQube, but focused on VPN configuration security.
+
+## Scoring Model
+
+Each rule has:
+
+- severity: `info`, `low`, `medium`, or `high`;
+- category;
+- confidence;
+- weight.
+
+The final score is calculated as:
+
+```text
+score = 100 - total weighted penalties
+```
+
+The score is clamped to `0..100` and mapped to:
+
+- `low` risk: score `75..100`;
+- `medium` risk: score `45..74`;
+- `high` risk: score `0..44`.
+
+The exported report includes a score breakdown by category.
+
+## Remediation Advisor (Gemini)
+
+The Remediation Advisor turns local static-analysis findings into concise fix guidance. The deterministic rule engine remains the source of truth; the advisor does not make independent security decisions.
+
+You can enter the Gemini API key in the application or create a `.env` file:
+
+```bash
+VITE_GEMINI_API_KEY=your_key
+```
+
+The advisor receives the local static-analysis result, including severity, category, confidence, score breakdown, and evidence. It is prompted to explain only the risks supported by the provided findings.
+
+Advisor responses are cached by SHA-256 hash of the file content and selected language, so the same configuration is not sent repeatedly for the same language.
+
+SDK documentation: https://googleapis.github.io/js-genai/release_docs/index.html
+
+## Evaluation Dataset
+
+The `samples` directory contains curated secure and insecure configurations:
+
+```text
+samples/
+  secure/
+  insecure/
+  evaluation.csv
+```
+
+`samples/evaluation.csv` defines the expected risk level and minimum expected findings for each sample. This supports reproducible evaluation and can be used in the final project report.
+
+Run evaluation tests:
+
+```bash
+npm test
+```
+
+The current automated checks verify:
+
+- parser evidence and line numbers;
+- expected risk levels for evaluation samples;
+- expected minimum finding IDs for evaluation samples.
+
+## Run
+
+Install dependencies:
 
 ```bash
 npm install
+```
+
+Run the Electron app:
+
+```bash
 npm run dev
 ```
 
-## Анализ от ИИ
-
-Для блока «Анализ от ИИ» нужен Gemini API key. Scandium использует официальный SDK `@google/genai` и модель `gemini-2.5-flash`. Ключ можно ввести прямо в приложении или создать `.env` файл:
+Run the web-only Vite app:
 
 ```bash
-VITE_GEMINI_API_KEY=ваш_ключ
+npm run dev:web
 ```
 
-Результат Gemini кэшируется по SHA-256 хэшу содержимого файла и выбранному языку, поэтому один и тот же конфиг повторно не отправляется для того же языка. Ответ хранится в структурированном виде: краткий вывод, ключевые риски, рекомендуемые действия и итог.
+## Build And Verify
 
-Документация SDK: https://googleapis.github.io/js-genai/release_docs/index.html
+Typecheck:
 
-## Сборка
+```bash
+npm run typecheck
+```
+
+Run tests:
+
+```bash
+npm test
+```
+
+Build:
 
 ```bash
 npm run build
 ```
 
-## Примеры
+## Project Structure
 
-В папке `samples` есть демонстрационные конфигурации с намеренно небезопасными параметрами.
+- `src/core` - parser, rule engine, scoring, reports, advisor cache, and remediation prompts.
+- `src/components` - Solid UI components.
+- `src/i18n` - UI and finding dictionaries.
+- `src/utils` - shared utilities.
+- `electron` - Electron main/preload code.
+- `samples` - demo and evaluation VPN configurations.
+- `tests` - parser and evaluation tests.
 
-## Структура
+## Limitations
 
-- `src/core` — парсинг, правила анализа, отчёты, Gemini-кэш и AI-запросы.
-- `src/components` — UI-компоненты приложения.
-- `src/i18n` — словари интерфейса и провайдер локализации.
-- `src/utils` — небольшие общие утилиты.
-- `electron` — запуск настольного окна Electron.
-
-## Локализация
-
-Переключение языка доступно в Electron-меню `View -> Language`. Язык по умолчанию — английский. Основные строки интерфейса вынесены в `src/i18n/dictionaries.ts`. AI-вывод запрашивается на выбранном языке. Тексты правил анализа и экспортируемого отчёта пока остаются отдельным слоем локализации.
+- Scandium analyzes client configuration files only; it does not inspect the VPN server runtime state.
+- Some findings are inferred from missing directives, so they represent potential risk rather than confirmed exploitation.
+- WireGuard `PrivateKey` presence is reported as sensitive material exposure even though it is normal in client profiles.
+- Remediation Advisor output is an explanation layer; deterministic local rules remain the source of truth.

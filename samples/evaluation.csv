@@ -1,0 +1,7 @@
+file,expected_risk,expected_findings
+secure/openvpn-secure.ovpn,low,
+secure/wireguard-secure.conf,low,wireguard-private-key-present
+insecure/openvpn-dangerous-scripts.ovpn,high,openvpn-no-auth-nocache;openvpn-no-verify-x509-name;openvpn-dangerous-script-security;openvpn-script-hook
+insecure/openvpn-legacy-tls-inline-key.ovpn,high,openvpn-weak-cipher;openvpn-weak-auth;openvpn-no-remote-cert-tls;openvpn-no-tls-hardening;openvpn-compression-enabled;openvpn-tcp-proto;openvpn-no-auth-nocache;openvpn-weak-tls-version-min;openvpn-no-verify-x509-name;openvpn-inline-private-key
+insecure/wireguard-dns-leak.conf,high,wireguard-private-key-present;wireguard-full-tunnel;wireguard-no-keepalive;wireguard-full-tunnel-no-dns
+insecure/wireguard-malformed.conf,high,wireguard-private-key-present;wireguard-no-dns;wireguard-no-keepalive;wireguard-no-address;wireguard-malformed-key;wireguard-malformed-endpoint

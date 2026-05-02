@@ -1,18 +1,18 @@
 import { parseConfig } from "./parser";
 import { analyzeOpenVpn, analyzeUnknown, analyzeWireGuard } from "./rules";
-import type { AnalysisResult, Finding, Severity } from "./types";
+import type { AnalysisResult, Finding, RuleCategory } from "./types";
 import type { Language } from "../i18n/dictionaries";
 
-const severityWeight: Record<Severity, number> = {
-  info: 0,
-  low: 8,
-  medium: 18,
-  high: 32
-};
-
 function scoreFindings(findings: Finding[]) {
-  const penalty = findings.reduce((sum, finding) => sum + severityWeight[finding.severity], 0);
+  const penalty = findings.reduce((sum, finding) => sum + finding.weight, 0);
   return Math.max(0, Math.min(100, 100 - penalty));
+}
+
+function scoreBreakdown(findings: Finding[]) {
+  return findings.reduce<Partial<Record<RuleCategory, number>>>((breakdown, finding) => {
+    breakdown[finding.category] = (breakdown[finding.category] ?? 0) + finding.weight;
+    return breakdown;
+  }, {});
 }
 
 function riskLevel(score: number): AnalysisResult["riskLevel"] {
@@ -35,6 +35,11 @@ const reportText = {
     type: "Тип",
     score: "Оценка",
     riskLevel: "Уровень риска",
+    scoreBreakdown: "Разбивка оценки",
+    category: "Категория",
+    confidence: "Уверенность",
+    evidence: "Доказательства",
+    line: "строка",
     findings: "Найденные замечания:",
     description: "Описание",
     recommendation: "Рекомендация",
@@ -49,6 +54,11 @@ const reportText = {
     type: "Type",
     score: "Score",
     riskLevel: "Risk level",
+    scoreBreakdown: "Score breakdown",
+    category: "Category",
+    confidence: "Confidence",
+    evidence: "Evidence",
+    line: "line",
     findings: "Findings:",
     description: "Description",
     recommendation: "Recommendation",
@@ -63,6 +73,11 @@ const reportText = {
     type: "Түрі",
     score: "Баға",
     riskLevel: "Тәуекел деңгейі",
+    scoreBreakdown: "Баға бөлінісі",
+    category: "Санат",
+    confidence: "Сенімділік",
+    evidence: "Дәлелдер",
+    line: "жол",
     findings: "Анықталған ескертулер:",
     description: "Сипаттама",
     recommendation: "Ұсыныс",
@@ -93,6 +108,7 @@ export function analyzeConfig(fileName: string, content: string, language: Langu
     score,
     riskLevel: level,
     findings,
+    scoreBreakdown: scoreBreakdown(findings),
     summary: text.summary(fileName, parsed.type, score, riskLevelLabel(level, language))
   };
 }
@@ -111,14 +127,32 @@ export function formatReport(result: AnalysisResult, language: Language) {
     `${text.file}: ${result.fileName}`,
     `${text.type}: ${typeLabel}`,
     `${text.score}: ${result.score}/100`,
-    `${text.riskLevel}: ${riskLevelLabel(result.riskLevel, language)}`,
-    "",
-    text.findings
+    `${text.riskLevel}: ${riskLevelLabel(result.riskLevel, language)}`
   ];
+
+  const breakdownEntries = Object.entries(result.scoreBreakdown).filter(([, value]) => value > 0);
+  if (breakdownEntries.length > 0) {
+    lines.push("");
+    lines.push(`${text.scoreBreakdown}:`);
+    breakdownEntries.forEach(([category, value]) => {
+      lines.push(`- ${category}: -${value}`);
+    });
+  }
+
+  lines.push("");
+  lines.push(text.findings);
 
   result.findings.forEach((finding, index) => {
     lines.push("");
     lines.push(`${index + 1}. [${finding.severity.toUpperCase()}] ${finding.title}`);
+    lines.push(`${text.category}: ${finding.category}`);
+    lines.push(`${text.confidence}: ${finding.confidence}`);
+    if (finding.evidence?.length) {
+      lines.push(`${text.evidence}:`);
+      finding.evidence.forEach((item) => {
+        lines.push(`- ${text.line} ${item.line}: ${item.raw}`);
+      });
+    }
     lines.push(`${text.description}: ${finding.description}`);
     lines.push(`${text.recommendation}: ${finding.recommendation}`);
   });

@@ -14,7 +14,7 @@ export function AiFindingCard(props: AiFindingCardProps) {
   const { t } = useI18n();
 
   return (
-    <article class="finding aiFinding">
+    <article class="finding aiFinding interactiveCard ripple-target">
       <div class="findingTop">
         <h3>
           <span class="material-symbols-rounded" aria-hidden="true">auto_awesome</span>

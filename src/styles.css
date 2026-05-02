@@ -332,7 +332,7 @@ button:hover {
   margin-bottom: 24px;
 }
 
-.summary div {
+.summaryCard {
   background: var(--md-sys-color-surface-container-high);
   border: none;
   border-radius: 16px;
@@ -355,6 +355,38 @@ button:hover {
   color: var(--md-sys-color-on-surface);
   font-size: 18px;
   font-weight: 500;
+}
+
+.scoreBreakdown {
+  margin: -8px 0 24px;
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: 16px;
+  background: var(--md-sys-color-surface);
+  padding: 16px;
+}
+
+.scoreBreakdown > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.scoreBreakdown span span,
+.scoreBreakdown > div > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 8px;
+  background: var(--md-sys-color-surface-container-high);
+  color: var(--md-sys-color-on-surface-variant);
+  font-size: 13px;
+  font-weight: 500;
+  padding: 6px 10px;
+}
+
+.scoreBreakdown strong {
+  color: var(--md-custom-on-error-container);
+  font-weight: 600;
 }
 
 .sectionHeader {
@@ -413,6 +445,33 @@ button:hover {
   border: 1px solid var(--md-sys-color-outline-variant);
   border-radius: 16px;
   padding: 20px;
+}
+
+.interactiveCard {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  cursor: pointer;
+  transition:
+    transform 180ms ease,
+    background-color 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease;
+  --ripple-color: rgba(103, 80, 164, 0.16);
+  --ripple-sparkle-rgb: 103, 80, 164;
+}
+
+@media (hover: hover) {
+  .interactiveCard:hover {
+    transform: translateY(-2px);
+    background: var(--md-sys-color-surface-container-high);
+    border-color: color-mix(in srgb, var(--md-sys-color-primary) 28%, var(--md-sys-color-outline-variant));
+    box-shadow: 0 10px 24px rgba(29, 27, 32, 0.08);
+  }
+}
+
+.interactiveCard:active {
+  transform: translateY(-1px);
 }
 
 .aiFinding {
@@ -492,6 +551,45 @@ button:hover {
 .finding p strong {
   color: var(--md-sys-color-on-surface);
   font-weight: 500;
+}
+
+.findingMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.findingMeta span {
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: 8px;
+  color: var(--md-sys-color-on-surface-variant);
+  font-size: 12px;
+  font-weight: 500;
+  padding: 4px 8px;
+}
+
+.evidenceBlock {
+  display: grid;
+  gap: 8px;
+  margin-top: 14px;
+  padding: 12px;
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: 8px;
+  background: var(--md-sys-color-surface-container-low);
+}
+
+.evidenceBlock strong {
+  color: var(--md-sys-color-on-surface);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.evidenceBlock code {
+  overflow-wrap: anywhere;
+  color: var(--md-sys-color-on-surface-variant);
+  font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+  font-size: 13px;
 }
 
 .badge {

@@ -14,19 +14,19 @@ interface GeminiError extends Error {
 
 const aiErrorText = {
   ru: {
-    missingKey: "Добавьте Gemini API key, чтобы включить анализ от ИИ.",
-    emptyResponse: "Gemini SDK не вернул текстовый ответ.",
-    sdkError: (status: string, message: string) => `Gemini SDK вернул ошибку${status}: ${message}`
+    missingKey: "Добавьте ключ советника, чтобы включить рекомендации по исправлению.",
+    emptyResponse: "Сервис рекомендаций не вернул текстовый ответ.",
+    sdkError: (status: string, message: string) => `Сервис рекомендаций вернул ошибку${status}: ${message}`
   },
   en: {
-    missingKey: "Add a Gemini API key to enable AI analysis.",
-    emptyResponse: "Gemini SDK did not return a text response.",
-    sdkError: (status: string, message: string) => `Gemini SDK returned an error${status}: ${message}`
+    missingKey: "Add an advisor key to enable remediation guidance.",
+    emptyResponse: "The remediation service did not return a text response.",
+    sdkError: (status: string, message: string) => `The remediation service returned an error${status}: ${message}`
   },
   kk: {
-    missingKey: "ИИ талдауын қосу үшін Gemini API key қосыңыз.",
-    emptyResponse: "Gemini SDK мәтіндік жауап қайтармады.",
-    sdkError: (status: string, message: string) => `Gemini SDK қате қайтарды${status}: ${message}`
+    missingKey: "Түзету ұсыныстарын қосу үшін кеңесші кілтін қосыңыз.",
+    emptyResponse: "Ұсыныс қызметі мәтіндік жауап қайтармады.",
+    sdkError: (status: string, message: string) => `Ұсыныс қызметі қате қайтарды${status}: ${message}`
   }
 } as const;
 

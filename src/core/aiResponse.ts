@@ -3,23 +3,23 @@ import type { Language } from "../i18n/dictionaries";
 
 const fallbackText = {
   ru: {
-    invalidJson: "Gemini вернул неполный или невалидный JSON-ответ. Повторите анализ.",
-    emptyShort: "ИИ-анализ завершён, но ответ оказался пустым.",
-    emptyDetails: "Gemini не вернул подробный вывод.",
+    invalidJson: "Сервис рекомендаций вернул неполный или невалидный JSON-ответ. Повторите анализ.",
+    emptyShort: "Советник завершил работу, но ответ оказался пустым.",
+    emptyDetails: "Сервис рекомендаций не вернул подробный вывод.",
     riskKeywords: ["риск", "уязвим", "отсутств", "слаб"],
     actionKeywords: ["рекоменду", "добав", "использ", "перейти", "внедр"]
   },
   en: {
-    invalidJson: "Gemini returned an incomplete or invalid JSON response. Run the analysis again.",
-    emptyShort: "AI analysis finished, but the response was empty.",
-    emptyDetails: "Gemini did not return detailed output.",
+    invalidJson: "The remediation service returned an incomplete or invalid JSON response. Run the analysis again.",
+    emptyShort: "The advisor finished, but the response was empty.",
+    emptyDetails: "The remediation service did not return detailed output.",
     riskKeywords: ["risk", "vulnerab", "missing", "weak", "absent"],
     actionKeywords: ["recommend", "add", "use", "switch", "enable", "disable"]
   },
   kk: {
-    invalidJson: "Gemini толық емес немесе жарамсыз JSON жауабын қайтарды. Талдауды қайта іске қосыңыз.",
-    emptyShort: "ИИ талдауы аяқталды, бірақ жауап бос болды.",
-    emptyDetails: "Gemini толық қорытынды қайтармады.",
+    invalidJson: "Ұсыныс қызметі толық емес немесе жарамсыз JSON жауабын қайтарды. Талдауды қайта іске қосыңыз.",
+    emptyShort: "Кеңесші жұмысын аяқтады, бірақ жауап бос болды.",
+    emptyDetails: "Ұсыныс қызметі толық қорытынды қайтармады.",
     riskKeywords: ["тәуекел", "осал", "жоқ", "әлсіз", "көрсетілмеген"],
     actionKeywords: ["ұсыны", "қос", "қолдан", "ауыстыр", "тексер"]
   }

@@ -15,8 +15,16 @@ export type FindingId =
   | "openvpn-compression-enabled"
   | "openvpn-tcp-proto"
   | "openvpn-no-auth-nocache"
+  | "openvpn-no-tls-version-min"
+  | "openvpn-weak-tls-version-min"
+  | "openvpn-no-verify-x509-name"
+  | "openvpn-dangerous-script-security"
+  | "openvpn-script-hook"
+  | "openvpn-inline-private-key"
   | "openvpn-no-critical-issues"
   | "wireguard-private-key-present"
+  | "wireguard-no-interface-section"
+  | "wireguard-no-peer-section"
   | "wireguard-no-peer-key"
   | "wireguard-no-endpoint"
   | "wireguard-no-allowed-ips"
@@ -24,6 +32,9 @@ export type FindingId =
   | "wireguard-no-dns"
   | "wireguard-no-keepalive"
   | "wireguard-no-address"
+  | "wireguard-malformed-key"
+  | "wireguard-malformed-endpoint"
+  | "wireguard-full-tunnel-no-dns"
   | "wireguard-no-critical-issues"
   | "unknown-format";
 
@@ -69,6 +80,36 @@ const findingDictionaries = {
       description: "В конфигурации не найдена директива auth-nocache. Это может повысить риск раскрытия пароля на клиентском устройстве.",
       recommendation: "Добавьте auth-nocache для уменьшения времени хранения учетных данных в памяти клиента."
     },
+    "openvpn-no-tls-version-min": {
+      title: "Не задана минимальная версия TLS",
+      description: "В конфигурации не найдена директива tls-version-min. Без явного ограничения клиент может зависеть от настроек по умолчанию и совместимости со старыми протоколами.",
+      recommendation: "Добавьте tls-version-min 1.2 или выше, если это поддерживается сервером и клиентом."
+    },
+    "openvpn-weak-tls-version-min": {
+      title: "Разрешена устаревшая версия TLS",
+      description: "Директива tls-version-min разрешает TLS ниже 1.2, что снижает криптографическую стойкость TLS-канала.",
+      recommendation: "Установите tls-version-min 1.2 или 1.3 и проверьте совместимость всех клиентов."
+    },
+    "openvpn-no-verify-x509-name": {
+      title: "Не найдена проверка имени сертификата сервера",
+      description: "Без verify-x509-name клиент проверяет цепочку сертификатов, но может не ограничивать ожидаемое имя сервера достаточно явно.",
+      recommendation: "Добавьте verify-x509-name с ожидаемым именем сервера и подходящим режимом проверки."
+    },
+    "openvpn-dangerous-script-security": {
+      title: "Разрешено выполнение внешних скриптов",
+      description: "script-security 2 или 3 позволяет OpenVPN запускать внешние команды и скрипты, что увеличивает риск локального выполнения кода.",
+      recommendation: "Используйте минимально необходимый уровень script-security и удалите его, если скрипты не нужны."
+    },
+    "openvpn-script-hook": {
+      title: "Обнаружен hook для запуска скрипта",
+      description: "Директивы up, down, route-up или learn-address могут запускать локальные скрипты во время жизненного цикла VPN-соединения.",
+      recommendation: "Проверьте путь к скрипту, права доступа и необходимость hook. Удалите директиву, если она не требуется."
+    },
+    "openvpn-inline-private-key": {
+      title: "В конфигурации найден inline private key",
+      description: "Встроенный приватный ключ делает файл конфигурации чувствительным артефактом и повышает риск раскрытия ключевого материала.",
+      recommendation: "Храните файл в защищенном каталоге, ограничьте права доступа и не передавайте его по открытым каналам."
+    },
     "openvpn-no-critical-issues": {
       title: "Критичных проблем OpenVPN не обнаружено",
       description: "Базовые параметры конфигурации не содержат известных небезопасных настроек из набора правил.",
@@ -78,6 +119,16 @@ const findingDictionaries = {
       title: "В конфигурации присутствует приватный ключ",
       description: "Для WireGuard это нормально, но файл с PrivateKey является чувствительным и требует защиты на уровне файловой системы.",
       recommendation: "Храните конфигурацию в защищенном каталоге, ограничьте права доступа и не передавайте файл по открытым каналам."
+    },
+    "wireguard-no-interface-section": {
+      title: "Не найдена секция [Interface]",
+      description: "WireGuard-конфигурация без секции [Interface] не содержит локальных параметров туннеля и выглядит неполной.",
+      recommendation: "Добавьте секцию [Interface] с Address, PrivateKey и другими параметрами клиента."
+    },
+    "wireguard-no-peer-section": {
+      title: "Не найдена секция [Peer]",
+      description: "WireGuard-конфигурация без секции [Peer] не описывает удаленную сторону туннеля.",
+      recommendation: "Добавьте секцию [Peer] с PublicKey, AllowedIPs и Endpoint для клиентского профиля."
     },
     "wireguard-no-peer-key": {
       title: "Не найден публичный ключ peer",
@@ -113,6 +164,21 @@ const findingDictionaries = {
       title: "Не задан адрес интерфейса",
       description: "Без Address интерфейс WireGuard может быть настроен неполно и не получит ожидаемую адресацию в туннеле.",
       recommendation: "Добавьте Address в секцию [Interface] согласно схеме адресации VPN."
+    },
+    "wireguard-malformed-key": {
+      title: "Ключ WireGuard имеет некорректный формат",
+      description: "Значение PrivateKey или PublicKey не похоже на стандартный base64-ключ WireGuard длиной 44 символа.",
+      recommendation: "Проверьте, что ключ скопирован полностью и не содержит пробелов, переносов или лишних символов."
+    },
+    "wireguard-malformed-endpoint": {
+      title: "Endpoint имеет некорректный формат",
+      description: "Endpoint должен указывать адрес сервера и порт. Некорректный формат может привести к неработающему или неоднозначному подключению.",
+      recommendation: "Используйте формат host:port, например vpn.example.org:51820, или [IPv6]:port для IPv6-адреса."
+    },
+    "wireguard-full-tunnel-no-dns": {
+      title: "Полный туннель настроен без DNS",
+      description: "AllowedIPs направляет весь трафик через VPN, но DNS в секции [Interface] не задан. Это повышает риск DNS-утечек.",
+      recommendation: "Добавьте доверенный DNS в секцию [Interface] и проверьте поведение DNS при подключении и отключении VPN."
     },
     "wireguard-no-critical-issues": {
       title: "Критичных проблем WireGuard не обнаружено",
@@ -166,6 +232,36 @@ const findingDictionaries = {
       description: "The configuration does not include auth-nocache. This can increase the risk of password exposure on the client device.",
       recommendation: "Add auth-nocache to reduce how long credentials remain in the client memory."
     },
+    "openvpn-no-tls-version-min": {
+      title: "Minimum TLS version is not set",
+      description: "The configuration does not include tls-version-min. Without an explicit lower bound, the client depends on defaults and compatibility with older protocols.",
+      recommendation: "Add tls-version-min 1.2 or higher if supported by the server and clients."
+    },
+    "openvpn-weak-tls-version-min": {
+      title: "Outdated TLS version is allowed",
+      description: "The tls-version-min directive allows TLS below 1.2, which weakens the cryptographic posture of the TLS channel.",
+      recommendation: "Set tls-version-min to 1.2 or 1.3 and verify compatibility across clients."
+    },
+    "openvpn-no-verify-x509-name": {
+      title: "Server certificate name check is missing",
+      description: "Without verify-x509-name, the client may validate the certificate chain but not strictly pin the expected server identity.",
+      recommendation: "Add verify-x509-name with the expected server name and an appropriate verification mode."
+    },
+    "openvpn-dangerous-script-security": {
+      title: "External script execution is enabled",
+      description: "script-security 2 or 3 allows OpenVPN to run external commands and scripts, increasing local code execution risk.",
+      recommendation: "Use the minimum required script-security level and remove it if scripts are not needed."
+    },
+    "openvpn-script-hook": {
+      title: "Script execution hook detected",
+      description: "Directives such as up, down, route-up, or learn-address can run local scripts during the VPN connection lifecycle.",
+      recommendation: "Review the script path, file permissions, and business need. Remove the hook if it is not required."
+    },
+    "openvpn-inline-private-key": {
+      title: "Inline private key found in configuration",
+      description: "An embedded private key makes the configuration file a sensitive artifact and increases key exposure risk.",
+      recommendation: "Store the file in a protected location, restrict access permissions, and do not send it through open channels."
+    },
     "openvpn-no-critical-issues": {
       title: "No critical OpenVPN issues detected",
       description: "The basic configuration parameters do not contain known unsafe settings from the current rule set.",
@@ -175,6 +271,16 @@ const findingDictionaries = {
       title: "The configuration contains a private key",
       description: "This is normal for WireGuard, but a file with PrivateKey is sensitive and must be protected at the file-system level.",
       recommendation: "Store the configuration in a protected directory, restrict access rights, and do not send the file through open channels."
+    },
+    "wireguard-no-interface-section": {
+      title: "[Interface] section is missing",
+      description: "A WireGuard configuration without [Interface] does not define local tunnel parameters and appears incomplete.",
+      recommendation: "Add an [Interface] section with Address, PrivateKey, and other client parameters."
+    },
+    "wireguard-no-peer-section": {
+      title: "[Peer] section is missing",
+      description: "A WireGuard configuration without [Peer] does not describe the remote side of the tunnel.",
+      recommendation: "Add a [Peer] section with PublicKey, AllowedIPs, and Endpoint for a client profile."
     },
     "wireguard-no-peer-key": {
       title: "Peer public key is missing",
@@ -210,6 +316,21 @@ const findingDictionaries = {
       title: "Interface address is missing",
       description: "Without Address, the WireGuard interface may be incomplete and may not receive the expected tunnel addressing.",
       recommendation: "Add Address to the [Interface] section according to the VPN addressing scheme."
+    },
+    "wireguard-malformed-key": {
+      title: "WireGuard key has an invalid format",
+      description: "A PrivateKey or PublicKey value does not look like a standard 44-character WireGuard base64 key.",
+      recommendation: "Check that the key was copied fully and does not contain spaces, line breaks, or extra characters."
+    },
+    "wireguard-malformed-endpoint": {
+      title: "Endpoint has an invalid format",
+      description: "Endpoint should include a server address and port. An invalid format can make the connection fail or behave ambiguously.",
+      recommendation: "Use host:port, for example vpn.example.org:51820, or [IPv6]:port for an IPv6 address."
+    },
+    "wireguard-full-tunnel-no-dns": {
+      title: "Full tunnel is configured without DNS",
+      description: "AllowedIPs sends all traffic through the VPN, but DNS is not set in [Interface]. This increases DNS leak risk.",
+      recommendation: "Add a trusted DNS server to [Interface] and verify DNS behavior when the VPN connects and disconnects."
     },
     "wireguard-no-critical-issues": {
       title: "No critical WireGuard issues detected",
@@ -263,6 +384,36 @@ const findingDictionaries = {
       description: "Конфигурацияда auth-nocache директивасы табылмады. Бұл клиент құрылғысындағы парольдің ашылу қаупін арттыруы мүмкін.",
       recommendation: "Тіркелгі деректерінің клиент жадында сақталу уақытын азайту үшін auth-nocache қосыңыз."
     },
+    "openvpn-no-tls-version-min": {
+      title: "TLS минималды нұсқасы көрсетілмеген",
+      description: "Конфигурацияда tls-version-min директивасы табылмады. Нақты шектеу болмаса, клиент әдепкі баптауларға және ескі протоколдармен үйлесімділікке тәуелді болуы мүмкін.",
+      recommendation: "Сервер мен клиенттер қолдаса, tls-version-min 1.2 немесе одан жоғары мәнін қосыңыз."
+    },
+    "openvpn-weak-tls-version-min": {
+      title: "Ескірген TLS нұсқасына рұқсат берілген",
+      description: "tls-version-min директивасы TLS 1.2-ден төмен нұсқаларға рұқсат береді, бұл TLS арнасының криптографиялық беріктігін төмендетеді.",
+      recommendation: "tls-version-min мәнін 1.2 немесе 1.3 етіп қойып, клиенттердің үйлесімділігін тексеріңіз."
+    },
+    "openvpn-no-verify-x509-name": {
+      title: "Сервер сертификатының аты тексерілмейді",
+      description: "verify-x509-name болмаса, клиент сертификат тізбегін тексеруі мүмкін, бірақ күтілетін сервер сәйкестігін жеткілікті нақты шектемеуі мүмкін.",
+      recommendation: "Күтілетін сервер атымен және тиісті тексеру режимімен verify-x509-name қосыңыз."
+    },
+    "openvpn-dangerous-script-security": {
+      title: "Сыртқы скрипттерді орындауға рұқсат берілген",
+      description: "script-security 2 немесе 3 OpenVPN-ге сыртқы командалар мен скрипттерді іске қосуға мүмкіндік береді, бұл жергілікті код орындау қаупін арттырады.",
+      recommendation: "script-security деңгейін ең төмен қажетті мәнге түсіріңіз немесе скрипттер қажет болмаса, директиваны алып тастаңыз."
+    },
+    "openvpn-script-hook": {
+      title: "Скрипт іске қосатын hook анықталды",
+      description: "up, down, route-up немесе learn-address сияқты директивалар VPN қосылымының кезеңдерінде жергілікті скрипттерді іске қоса алады.",
+      recommendation: "Скрипт жолын, файл құқықтарын және қажеттілігін тексеріңіз. Қажет болмаса, hook директивасын алып тастаңыз."
+    },
+    "openvpn-inline-private-key": {
+      title: "Конфигурацияда inline private key табылды",
+      description: "Енгізілген жеке кілт конфигурация файлын сезімтал артефактқа айналдырады және кілттің ашылу қаупін арттырады.",
+      recommendation: "Файлды қорғалған жерде сақтап, қол жеткізу құқықтарын шектеңіз және ашық арналар арқылы жібермеңіз."
+    },
     "openvpn-no-critical-issues": {
       title: "OpenVPN бойынша критикалық мәселе табылмады",
       description: "Конфигурацияның негізгі параметрлерінде ағымдағы ережелер жиынындағы белгілі қауіпсіз емес баптаулар жоқ.",
@@ -272,6 +423,16 @@ const findingDictionaries = {
       title: "Конфигурацияда жеке кілт бар",
       description: "WireGuard үшін бұл қалыпты жағдай, бірақ PrivateKey бар файл сезімтал және файлдық жүйе деңгейінде қорғалуы керек.",
       recommendation: "Конфигурацияны қорғалған каталогта сақтап, қол жеткізу құқықтарын шектеңіз және файлды ашық арналар арқылы жібермеңіз."
+    },
+    "wireguard-no-interface-section": {
+      title: "[Interface] секциясы табылмады",
+      description: "[Interface] жоқ WireGuard конфигурациясында туннельдің жергілікті параметрлері көрсетілмейді және ол толық емес көрінеді.",
+      recommendation: "Address, PrivateKey және басқа клиент параметрлері бар [Interface] секциясын қосыңыз."
+    },
+    "wireguard-no-peer-section": {
+      title: "[Peer] секциясы табылмады",
+      description: "[Peer] жоқ WireGuard конфигурациясы туннельдің қашықтағы тарапын сипаттамайды.",
+      recommendation: "Клиент профилі үшін PublicKey, AllowedIPs және Endpoint бар [Peer] секциясын қосыңыз."
     },
     "wireguard-no-peer-key": {
       title: "Peer ашық кілті табылмады",
@@ -307,6 +468,21 @@ const findingDictionaries = {
       title: "Интерфейс мекенжайы көрсетілмеген",
       description: "Address болмаса, WireGuard интерфейсі толық бапталмауы және туннельде күтілетін мекенжайды алмауы мүмкін.",
       recommendation: "VPN мекенжайлау схемасына сәйкес [Interface] секциясына Address қосыңыз."
+    },
+    "wireguard-malformed-key": {
+      title: "WireGuard кілтінің форматы дұрыс емес",
+      description: "PrivateKey немесе PublicKey мәні 44 таңбалы стандартты WireGuard base64 кілтіне ұқсамайды.",
+      recommendation: "Кілт толық көшірілгенін және ішінде бос орын, жол ауысуы немесе артық таңба жоқ екенін тексеріңіз."
+    },
+    "wireguard-malformed-endpoint": {
+      title: "Endpoint форматы дұрыс емес",
+      description: "Endpoint сервер мекенжайы мен портты көрсетуі керек. Қате формат қосылымның істемеуіне немесе екіұшты баптауға әкелуі мүмкін.",
+      recommendation: "host:port форматын қолданыңыз, мысалы vpn.example.org:51820, ал IPv6 үшін [IPv6]:port қолданыңыз."
+    },
+    "wireguard-full-tunnel-no-dns": {
+      title: "Толық туннель DNS көрсетілмей бапталған",
+      description: "AllowedIPs барлық трафикті VPN арқылы жібереді, бірақ [Interface] ішінде DNS көрсетілмеген. Бұл DNS leak қаупін арттырады.",
+      recommendation: "[Interface] секциясына сенімді DNS қосып, VPN қосылғанда және ажырағанда DNS әрекетін тексеріңіз."
     },
     "wireguard-no-critical-issues": {
       title: "WireGuard бойынша критикалық мәселе табылмады",
